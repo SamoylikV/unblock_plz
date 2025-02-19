@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from config import SERVER_IP
 from urllib.parse import quote
 
-
 class ClientManager:
     def __init__(self, auth_url, username, password):
         self.auth_url = auth_url

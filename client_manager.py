@@ -31,11 +31,10 @@ class ClientManager:
         self.session_cookie = self.session.cookies.get("3x-ui")
         if not self.session_cookie:
             raise Exception("Не удалось получить session cookie")
-        print("Аутентификация успешна")
 
-    def generate_clients(self, email):
+    def generate_clients(self, email, days):
         clients = []
-        expiry_time = int((datetime.now() + timedelta(days=2)).timestamp() * 1000)
+        expiry_time = int((datetime.now() + timedelta(days=days)).timestamp() * 1000)
         clients.append({
             "id": str(uuid.uuid4()),
             "flow": "",
@@ -119,5 +118,4 @@ class ClientManager:
         if response.status_code != 200:
             raise Exception(f"Ошибка добавления клиента: {response.status_code}. Ответ: {response.text}")
 
-        print("Клиент успешно добавлен")
         return response.json()

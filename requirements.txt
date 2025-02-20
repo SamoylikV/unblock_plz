@@ -23,3 +23,5 @@ Booktype~=1.5
 DateTime~=5.5
 redis~=5.2.1
 marzban~=0.4.2
+qrcode~=8.0
+pillow~=11.1.0

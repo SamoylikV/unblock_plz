@@ -14,7 +14,7 @@ class MarzbanClientManager:
 
     def generate_clients(self, email, days):
         client = UserCreate(username=f"{email}", proxies={"vless": ProxySettings(flow="xtls-rprx-vision")},
-                          inbounds={'vless': ['VLESS TCP REALITY']}, expire=int((datetime.now() + timedelta(days=days)).timestamp()), data_limit=400, data_limit_reset_strategy="month")
+                          inbounds={'vless': ['VLESS TCP REALITY']}, expire=int((datetime.now() + timedelta(days=days)).timestamp()), data_limit=10737418240 * 40, data_limit_reset_strategy="month")
         return client
 
     async def get_vless(self, username: str):

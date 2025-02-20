@@ -58,14 +58,14 @@ def register_handlers(dp, bot, client_manager, redis_manager):
             add_active_message(user_id, sent)
         sent = await message.answer(text=combined_text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         add_active_message(user_id, sent)
-        if not flag:
-            qr = client_manager.generate_qr(key)
-            try:
-                with open(qr, "rb") as file:
-                    file_data = file.read()
-                input_file = BufferedInputFile(file_data, filename="qr_code.png")
-                sent = await message.answer_photo(input_file)
-                add_active_message(user_id, sent)
-            finally:
-                if os.path.exists(qr):
-                    os.remove(qr)
+        # if not flag:
+        #     qr = client_manager.generate_qr(key)
+        #     try:
+        #         with open(qr, "rb") as file:
+        #             file_data = file.read()
+        #         input_file = BufferedInputFile(file_data, filename="qr_code.png")
+        #         sent = await message.answer_photo(input_file)
+        #         add_active_message(user_id, sent)
+        #     finally:
+        #         if os.path.exists(qr):
+        #             os.remove(qr)

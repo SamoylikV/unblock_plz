@@ -1,8 +1,12 @@
+import os
+
 from aiogram import types
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice, PreCheckoutQuery
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice, PreCheckoutQuery, \
+    InputFile, BufferedInputFile
 from aiogram.enums import ParseMode
-from config import PAYMENT_PROVIDER_TOKEN
+from config import PAYMENT_PROVIDER_TOKEN, PROVIDER
+
 
 def register_handlers(dp, bot, client_manager, redis_manager):
     user_data = {}
@@ -84,23 +88,35 @@ def register_handlers(dp, bot, client_manager, redis_manager):
     async def process_payment(message: Message):
         user_id = message.from_user.id
         await clear_active_messages(user_id)
-        if user_id not in user_data:
-            await message.answer("Ошибка: не найден тариф!")
-            return
         try:
-            client_manager.authenticate()
             days = user_data[user_id]["days"]
             email = message.from_user.username
-            clients = client_manager.generate_clients(email, days)
-            client_manager.add_clients(clients)
-            key = client_manager.get_vless(email)
+            if PROVIDER == "MARZBAN":
+                clients = client_manager.generate_clients(email, days)
+                await client_manager.add_clients(clients)
+                key = await client_manager.get_vless(username=email)
+            else:
+                client_manager.authenticate()
+                clients = client_manager.generate_clients(email, days)
+                client_manager.add_clients(clients)
+                key = client_manager.get_vless(email)
             await redis_manager.save_user_data(user_id, email, key, days)
 
         except Exception as e:
-            key = f"Ошибка генерации ключа: {e}"
+            key = e
         with open("instructions.html", "r", encoding="utf-8") as f:
             instructions = f.read()
         combined_text = f"{instructions}\n\n<b>Ваш ключ доступа:</b>\n<pre><code>{key}</code></pre>"
         sent = await message.answer(text=combined_text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         add_active_message(user_id, sent)
+        qr = client_manager.generate_qr(key)
+        try:
+            with open(qr, "rb") as file:
+                file_data = file.read()
+            input_file = BufferedInputFile(file_data, filename="qr_code.png")
+            sent = await message.answer_photo(input_file)
+            add_active_message(message.from_user.id, sent)
+        finally:
+            if os.path.exists(qr):
+                os.remove(qr)
         del user_data[user_id]

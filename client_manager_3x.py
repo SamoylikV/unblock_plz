@@ -1,15 +1,18 @@
 import json
 import uuid
+
+import qrcode
 import requests
 from datetime import datetime, timedelta
 from config import SERVER_IP
 from urllib.parse import quote
+from config import AUTH_URL, USERNAME, PASSWORD
 
 class ClientManager:
-    def __init__(self, auth_url, username, password):
-        self.auth_url = auth_url
-        self.username = username
-        self.password = password
+    def __init__(self):
+        self.auth_url = AUTH_URL
+        self.username = USERNAME
+        self.password = PASSWORD
         self.session = requests.Session()
         self.session_cookie = None
 
@@ -18,18 +21,16 @@ class ClientManager:
         auth_response = self.session.post(self.auth_url, data=auth_data)
 
         if auth_response.status_code != 200:
-            raise Exception(f"Ошибка аутентификации: {auth_response.status_code}. Ответ: {auth_response.text}")
+            raise Exception(f"{auth_response.status_code}\n{auth_response.text}")
 
         try:
             auth_json = auth_response.json()
             if not auth_json.get("success"):
-                raise Exception(f"Аутентификация не удалась: {auth_json}")
+                raise Exception(auth_json)
         except json.JSONDecodeError:
-            raise Exception(f"Ошибка разбора JSON. Ответ: {auth_response.text}")
+            raise Exception(auth_response.text)
 
         self.session_cookie = self.session.cookies.get("3x-ui")
-        if not self.session_cookie:
-            raise Exception("Не удалось получить session cookie")
 
     def generate_clients(self, email, days):
         clients = []
@@ -115,6 +116,12 @@ class ClientManager:
         response = self.session.post(url, headers=headers, data=json.dumps(data))
 
         if response.status_code != 200:
-            raise Exception(f"Ошибка добавления клиента: {response.status_code}. Ответ: {response.text}")
+            raise Exception(f"О{response.status_code}\n{response.text}")
 
         return response.json()
+
+    def generate_qr(self, key):
+        unique_name = f"qr_{uuid.uuid4().hex}.png"
+        img = qrcode.make(key)
+        img.save(unique_name)
+        return unique_name

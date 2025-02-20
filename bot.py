@@ -1,17 +1,22 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-from config import TG_TOKEN, REDIS_URL, AUTH_URL, USERNAME, PASSWORD
+from config import TG_TOKEN, REDIS_URL, PROVIDER
 from redis_manager import RedisManager
 from notifier import Notifier
 from handlers import register_handlers
-from client_manager import ClientManager
+from client_manager_3x import ClientManager
+from client_manager_marzban import MarzbanClientManager
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
-client_manager = ClientManager(AUTH_URL, USERNAME, PASSWORD)
+if PROVIDER == "MARZBAN":
+    client_manager = MarzbanClientManager()
+else:
+    client_manager = ClientManager()
+
 redis_manager = RedisManager(REDIS_URL)
 
 

@@ -52,9 +52,10 @@ def register_handlers(dp, bot, client_manager, redis_manager):
             combined_text = "У вас уже есть ключ доступа"
             flag = True
         else:
-            combined_text = f"<b>Ваш ключ доступа:</b>\n<pre><code>{key}</code></pre>"
-        sent = await message.answer(text=instructions, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-        add_active_message(user_id, sent)
+            combined_text = f"<pre><code>{key}</code></pre>"
+        if not flag:
+            sent = await message.answer(text=instructions, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+            add_active_message(user_id, sent)
         sent = await message.answer(text=combined_text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         add_active_message(user_id, sent)
         if not flag:
